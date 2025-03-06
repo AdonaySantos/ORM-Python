@@ -5,7 +5,7 @@ import os
 
 load_dotenv()
 
-class ORM:
+class DB_ORM:
     def __init__(self):
         self.connection = None
 
@@ -36,7 +36,34 @@ class ORM:
             tables = [table[0] for table in cursor.fetchall()]
 
             cursor.close
-            return ", ".join(table for table in tables)
+            return ", ".join(tables)
         except mysql.connector.Error as e:
             return jsonify({"error" : "Erro ao obter tabelas"})        
 
+    def get_table_schema(self, table_name):
+        conn = self.get_connection()
+        if not conn:
+            return jsonify({"error" : "Erro na conexão com o banco"}), 500
+        
+        try:
+            cursor = conn.cursor()
+            
+            cursor.execute(f"SHOW COLUMNS FROM {table_name}")
+            table_schema = [title for title in cursor.fetchall()]
+            
+            cursor.close()
+            
+            table_dict = {}
+            for column in table_schema:
+                column_name, column_type, is_nullable, key, default, extra = column
+                table_dict[column_name] = {
+                    "Tipo": column_type,
+                    "Null": is_nullable,
+                    "Key": key,
+                    "Default": default,
+                    "Extra": extra
+                }
+            
+            return table_dict
+        except mysql.connector.Error as e:
+            return jsonify({"error" : "Erro na conexão com o banco"}), 500
