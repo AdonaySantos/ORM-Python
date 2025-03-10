@@ -67,3 +67,32 @@ class DB_ORM:
             return table_dict
         except mysql.connector.Error as e:
             return jsonify({"error" : "Erro na conexão com o banco"}), 500
+        
+    def get_data(self, table_name, data_identifier):
+        conn = self.get_connection()
+        
+        if not conn:
+            return jsonify({"error": "Erro na conexão com o banco"}), 500
+        
+        try:
+            cursor = conn.cursor()
+
+            query = f"SELECT {', '.join(data_identifier)} FROM {table_name}"
+            cursor.execute(query)
+            data = cursor.fetchall()
+            
+            cursor.close()
+            
+            column_widths = [max(len(str(row[i])) for row in data) if data else 0 for i in range(len(data_identifier))]
+            column_widths = [max(column_widths[i], len(data_identifier[i])) for i in range(len(data_identifier))]
+            
+            header = " | ".join(f"{col.ljust(column_widths[i])}" for i, col in enumerate(data_identifier))
+            separator = "-+-".join("-" * column_widths[i] for i in range(len(data_identifier)))
+            
+            rows = "\n".join(" | ".join(f"{str(value).ljust(column_widths[i])}" for i, value in enumerate(row)) for row in data)
+            
+            formatted_data = f"{header}\n{separator}\n{rows}"
+            
+            return formatted_data
+        except mysql.connector.Error:
+            return jsonify({"error": "Erro na conexão com o banco"}), 500
