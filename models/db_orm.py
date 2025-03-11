@@ -5,19 +5,19 @@ class DBORM:
     def __init__(self):
         self.connection = Database.get_connection()
         
-    def execute_query(self, query: str, fetch=True):
+    def execute_query(self, query: str, fetch=True, values=None):
         if not self.connection:
             return jsonify({"error": "Erro na conexão com o banco"}), 500
         
         try:
             cursor = self.connection.cursor()
-            cursor.execute(query)
+            cursor.execute(query, values or ())
             
             if fetch:
                 result = cursor.fetchall()
             else:
                 self.connection.commit()
-                result = True
+                result = cursor.lastrowid
             cursor.close()
             return result
         
