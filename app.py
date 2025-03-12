@@ -23,7 +23,7 @@ def get_data(table_name):
         return jsonify({"error" : "Nenhuma coluna especificada"}), 400
     return table_service.get_data(table_name, columns)
 
-@app.route('/<string:table_name>', methods=['POST'])
+@app.route('/insert/<string:table_name>', methods=['POST'])
 def insert_data(table_name):
     if not request.is_json:
         return jsonify({"error" : "A requisição deve ser em formato JSON"}), 400
@@ -31,9 +31,20 @@ def insert_data(table_name):
     columns = request.json.get("columns")
     data = request.json.get("data")
     
-    if not columns or not data:
-        return jsonify({"error" : "Nenhuma coluna especificada ou nenhum dado inserido"}), 400
+    if not columns:
+        return jsonify({"error" : "Nenhuma coluna especificada"}), 400
     return table_service.insert_data(table_name, columns, data)
+
+@app.route('/delete/<string:table_name>', methods=['DELETE'])
+def delete_data(table_name):
+    if not request.is_json:
+        return jsonify({"error" : "A requisição deve ser em formato JSON"}), 400
+    
+    conditions = request.json.get("conditions")
+    
+    if not conditions:
+        return jsonify({"error" : "Nenhuma condição especificada"}), 400
+    return table_service.delete_data(table_name, conditions)
 
 if __name__ == "__main__":
     app.run(debug=True)
