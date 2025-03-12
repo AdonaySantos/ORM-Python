@@ -41,3 +41,19 @@ class TableService:
             data.append(row_dict)
             
         return jsonify(data)
+    
+    def insert_data(self, table_name: str, columns: list[str], data: list[str]):
+        if not data:
+            return jsonify({"error" : "Nenhum dado fornecido"}), 400
+        
+        clmns = ", ".join(columns)
+        dta = ", ".join(['%s'] * len(data))
+        query = f"INSERT INTO {table_name} ({clmns}) VALUES ({dta})"
+        values = tuple(data)
+        
+        try:
+            result = self.db.execute_query(query, fetch=False, values=values)
+            return jsonify({"message" : "Registro inserido com sucesso", "id" : result})
+        except Exception as e:
+            return jsonify({"error" : f"{e}"}), 500
+            
