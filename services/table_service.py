@@ -57,3 +57,15 @@ class TableService:
         except Exception as e:
             return jsonify({"error" : f"{e}"}), 500
             
+    def delete_data(self, table_name: str, conditions: list[str]):
+        if len(conditions) > 1:
+            conditions = " AND ".join(conditions)
+        
+        query = f"DELETE FROM {table_name} WHERE {conditions}"
+        
+        try:
+            result = self.db.execute_query(query, fetch=False)
+            return jsonify({"message" : "Registro deletado com sucesso"})
+        except Exception as e:
+            return jsonify({"error" : f"{e}"}), 500
+        
