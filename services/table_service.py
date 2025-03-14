@@ -48,7 +48,7 @@ class TableService:
         
         clmns = ", ".join(columns)
         dta = ", ".join(['%s'] * len(data))
-        query = f"INSERT INTO {table_name} ({clmns}) VALUES ({dta})"
+        query = f"INSERT INTO {table_name} ({clmns}) VALUES ({dta});"
         values = tuple(data)
         
         try:
@@ -61,7 +61,7 @@ class TableService:
         if len(conditions) > 1:
             conditions = " AND ".join(conditions)
         
-        query = f"DELETE FROM {table_name} WHERE {conditions}"
+        query = f"DELETE FROM {table_name} WHERE {conditions};"
         
         try:
             result = self.db.execute_query(query, fetch=False)
@@ -69,3 +69,19 @@ class TableService:
         except Exception as e:
             return jsonify({"error" : f"{e}"}), 500
         
+    def update_data(self, table_name: str, conditions: list[str], values: dict):
+        if len(conditions) > 1:
+            conditions = " AND ".join(conditions)
+            
+        set_clauses = [f"{column} = %s" for column in values.keys()]
+        set_str = ", ".join(set_clauses)
+        
+        query = f"UPDATE {table_name} SET {set_str} WHERE {conditions};"
+        
+        query_values = list(values.values())
+        
+        try:
+            result = self.db.execute_query(query, fetch=False, values=query_values)
+            return jsonify({"message" : "Registro atualizado com sucesso"})
+        except Exception as e:
+            return jsonify({"error" : f"{e}"}), 500
