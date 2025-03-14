@@ -46,5 +46,21 @@ def delete_data(table_name):
         return jsonify({"error" : "Nenhuma condição especificada"}), 400
     return table_service.delete_data(table_name, conditions)
 
+@app.route('/update/<string:table_name>', methods=["PUT"])
+def update_data(table_name):
+    if not request.is_json:
+        return jsonify({"error" : "A requisição deve ser em formato JSON"}), 400
+    
+    conditions = request.json.get("conditions")
+    new_values = request.json.get("values")
+    
+    if not conditions or not new_values:
+        return jsonify({"error" : "Nenhuma condição especificada ou nenhum dado novo"}), 400
+    
+    if not isinstance(new_values, dict):
+        return jsonify({"error" : "'values' deve ser um dicionário com colunas e novos valores"}), 400
+
+    return table_service.update_data(table_name, conditions, new_values)
+
 if __name__ == "__main__":
     app.run(debug=True)
